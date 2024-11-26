@@ -1,0 +1,19 @@
+torch
+torchvision
+torchmetrics
+pycocotools
+faster-coco-eval
+pandas
+opencv-contrib-python
+tqdm
+ftfy
+regex
+einops
+scipy
+timm
+decord
+# for visualization
+matplotlib
+# for baseline
+lapx
+transformers
