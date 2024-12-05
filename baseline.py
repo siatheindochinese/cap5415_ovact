@@ -25,6 +25,8 @@ parser.add_argument("-ucf101", type=str,
                     help="path to ucf101")
 parser.add_argument("-jhmdb", type=str,
                     help="path to jhmdb")
+parser.add_argument("-fusion", type=float, default=0,
+                    help="global-local vision embedding fusion ratio")
 args = parser.parse_args()
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -71,7 +73,12 @@ import torchvision.transforms.functional as visionF
 vlm = get_viclip('b', 'viclip/ViCLIP-B_InternVid-FLT-10M.pth')['viclip']
 _ = vlm.eval()
 
-base = Baseline(model, vlm)
+if args.fusion > 0:
+    base = Baseline(model, vlm, fusion=True, fusion_ratio=args.fusion)
+    print('global-local fusion enabled with ratio:', args.fusion)
+else:
+    base = Baseline(model, vlm)
+
 _ = base.to(device)
 
 ############

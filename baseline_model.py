@@ -9,13 +9,15 @@ from transformers import AutoImageProcessor, AutoModelForObjectDetection
 from util.box_ops import box_cxcywh_to_xyxy
 
 class Baseline(nn.Module):
-    def __init__(self, yolos, vlm):
+    def __init__(self, yolos, vlm, fusion=False, fusion_ratio=0.5):
         super().__init__()
         self.yolos = yolos
         self.vlm = vlm
         
         self.human_id = 1
         self.thresh = 0.9
+        self.fusion = fusion #disable/enable global-local fusion
+        self.fusion_ratio = fusion_ratio
         
     def forward(self, x, captions):
         H, W = x.shape[-2:]
@@ -23,6 +25,9 @@ class Baseline(nn.Module):
         
         results = []
         for B in range(x.shape[0]): # process each video independently
+            # get global feature if fusion is enabled
+            if self.fusion:
+                global_embed = F.normalize(self.vlm.encode_vision(visionF.resize(x[B], (224,224))), dim=-1)
             # reinitialized tracker for each video
             tracker = BYTETracker(track_thresh=0.5,
                                   track_buffer=9,
@@ -84,6 +89,8 @@ class Baseline(nn.Module):
                         vid.append(visionF.resize(visionF.crop(x[B,t], x1, y1, x2, y2), (224,224)))
                     vid = torch.stack(vid).unsqueeze(0)
                     vision_embeds = F.normalize(self.vlm.encode_vision(vid), dim=-1)
+                    if self.fusion:
+                        vision_embeds = (1 - self.fusion_ratio) * vision_embeds + self.fusion_ratio * global_embed
                     pred = (vision_embeds @ text_embeds.T)[0].argmax().cpu().detach().item()
                     #score = (vision_embeds @ text_embeds.T)[0].softmax(dim=-1).max().cpu().detach().item()
                     score = (((vision_embeds @ text_embeds.T)[0]+1)/2).max().cpu().detach().item()
