@@ -25,7 +25,7 @@ Download UCF-101 [here](https://www.crcv.ucf.edu/research/data-sets/ucf101/) and
     ├── wave
 
 ## 3. Run Evaluation
-Run `python baseline-py -ucf101 /path/to/ucf101 -jhmdb /path/to/jhmdb` to collect f-mAP@0.5 for UCF-101-24 and JHMDB.
+Run `python baseline-py -ucf101 /path/to/ucf101 -jhmdb /path/to/jhmdb -fusion 0.5` to collect f-mAP@0.5 for UCF-101-24 and JHMDB. THe `-fusion` flag determines the amount of global information to be fused into local embeddings from human tubelets. Set it to 0 to avoid using this feature.
 
 ## 4. Demo
 I have provided a jupyter notebook in this repo to extract qualitative results. See `demo.ipynb`.
