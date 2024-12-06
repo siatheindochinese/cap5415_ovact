@@ -39,6 +39,8 @@ class Baseline(nn.Module):
             bboxes = outputs.pred_boxes
             H, W = x[B].shape[-2:]
             
+            
+            # detect humans in all frames and build tubelets
             tubelets = {}
             keyframe_ids = []
             keyframe_boxes = []
@@ -78,6 +80,8 @@ class Baseline(nn.Module):
                     if t == x.shape[1] // 2:
                         keyframe_ids.append(tid)
                         keyframe_boxes.append(tlwh)
+                        
+            # classify tubelets with VLM (optionally + global-local feature fusion)
             tubelets_pred = {}
             tubelets_scores = {}
             for tube_id in tubelets:
